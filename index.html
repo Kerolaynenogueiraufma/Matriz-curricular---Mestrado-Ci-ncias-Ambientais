@@ -376,38 +376,69 @@ function showToast(id, msg, duration = 4000) {
   setTimeout(() => { el.style.display = 'none'; }, duration);
 }
 
-function submitVote() {
+const FORMSPREE = 'https://formspree.io/f/mdajepvq';
+
+async function postToFormspree(data) {
+  const res = await fetch(FORMSPREE, {
+    method: 'POST',
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return res.ok;
+}
+
+async function submitVote() {
   const nome = document.getElementById('nome').value.trim();
   if (!nome) { alert('Por favor, informe seu nome.'); return; }
   if (selected.size === 0) { alert('Selecione ao menos uma disciplina.'); return; }
   const labels = [...selected].map(i => discs[i]);
-  console.log('VOTO', { nome, curso: document.getElementById('curso').value, disciplinas: labels });
-  showToast('ok-vote', `Votação de ${nome} registrada! ${selected.size} disciplina(s) selecionada(s).`);
-  setTimeout(() => {
-    selected.forEach(i => document.getElementById('disc-' + i).classList.remove('selected'));
-    selected.clear();
-    updateCounter();
-    document.getElementById('nome').value = '';
-    document.getElementById('curso').value = '';
-  }, 4000);
+  const btn = document.querySelector('#panel-0 .btn');
+  btn.textContent = 'Enviando...'; btn.disabled = true;
+  const ok = await postToFormspree({
+    tipo: 'VOTAÇÃO',
+    nome,
+    curso: document.getElementById('curso').value,
+    disciplinas_selecionadas: labels.join(' | '),
+    total_votos: labels.length
+  });
+  btn.textContent = 'Enviar votação'; btn.disabled = false;
+  if (ok) {
+    showToast('ok-vote', `Votação de ${nome} registrada! ${selected.size} disciplina(s) enviada(s).`);
+    setTimeout(() => {
+      selected.forEach(i => document.getElementById('disc-' + i).classList.remove('selected'));
+      selected.clear(); updateCounter();
+      document.getElementById('nome').value = '';
+      document.getElementById('curso').value = '';
+    }, 4000);
+  } else { alert('Erro ao enviar. Tente novamente.'); }
 }
 
-function submitSug() {
+async function submitSug() {
   const txt = document.getElementById('texto-sug').value.trim();
   if (!txt) { alert('Escreva sua sugestão antes de enviar.'); return; }
-  console.log('SUGESTÃO', {
-    nome: document.getElementById('nome-sug').value,
-    disciplina: document.getElementById('disc-sug').value,
-    texto: txt, prioridade: prio
+  const cats = [...document.querySelectorAll('#panel-1 .tag.sel')].map(b => b.textContent).join(', ');
+  const btn = document.querySelector('#panel-1 .btn');
+  btn.textContent = 'Enviando...'; btn.disabled = true;
+  const ok = await postToFormspree({
+    tipo: 'SUGESTÃO',
+    nome: document.getElementById('nome-sug').value || 'Anônimo',
+    curso: document.getElementById('curso-sug').value,
+    categoria: cats || 'Não informada',
+    disciplina_sugerida: document.getElementById('disc-sug').value,
+    descricao: txt,
+    prioridade: prio || 'Não informada'
   });
-  showToast('ok-sug', 'Sugestão enviada! Será analisada pelo colegiado.');
-  setTimeout(() => {
-    document.getElementById('texto-sug').value = '';
-    document.getElementById('disc-sug').value = '';
-    document.querySelectorAll('#panel-1 .tag').forEach(b => b.classList.remove('sel'));
-    prio = '';
-    ['alta','media','baixa'].forEach(k => document.getElementById('prio-'+k).className = 'prio-btn');
-  }, 4000);
+  btn.textContent = 'Enviar sugestão'; btn.disabled = false;
+  if (ok) {
+    showToast('ok-sug', 'Sugestão enviada! Será analisada pelo colegiado.');
+    setTimeout(() => {
+      document.getElementById('texto-sug').value = '';
+      document.getElementById('disc-sug').value = '';
+      document.querySelectorAll('#panel-1 .tag').forEach(b => b.classList.remove('sel'));
+      prio = '';
+      ['alta','media','baixa'].forEach(k => document.getElementById('prio-'+k).className = 'prio-btn');
+    }, 4000);
+  } else { alert('Erro ao enviar. Tente novamente.'); }
 }
 
 function addFiles(fl) {
@@ -436,10 +467,10 @@ function renderFiles() {
   list.innerHTML = '';
   files.forEach((f, i) => {
     const ext = getExt(f.name);
-    const labels = {pdf:'PDF',doc:'DOC',xls:'XLS',img:'IMG',other:'ARQ'};
+    const lbls = {pdf:'PDF',doc:'DOC',xls:'XLS',img:'IMG',other:'ARQ'};
     const div = document.createElement('div');
     div.className = 'file-item';
-    div.innerHTML = `<div class="file-icon ${ext}">${labels[ext]}</div><span class="file-name">${f.name}</span><span class="file-size">${fmtSize(f.size)}</span><button class="file-rm" onclick="removeFile(${i})" title="Remover">×</button>`;
+    div.innerHTML = `<div class="file-icon ${ext}">${lbls[ext]}</div><span class="file-name">${f.name}</span><span class="file-size">${fmtSize(f.size)}</span><button class="file-rm" onclick="removeFile(${i})" title="Remover">×</button>`;
     list.appendChild(div);
   });
 }
@@ -450,16 +481,30 @@ function dragOver(e) { e.preventDefault(); document.getElementById('drop-zone').
 function dragLeave() { document.getElementById('drop-zone').classList.remove('drag'); }
 function dropFile(e) { e.preventDefault(); dragLeave(); addFiles(e.dataTransfer.files); }
 
-function submitUpload() {
+async function submitUpload() {
   if (files.length === 0) { alert('Adicione ao menos um arquivo.'); return; }
-  console.log('UPLOAD', { arquivos: files.map(f => f.name), obs: document.getElementById('obs-up').value });
-  showToast('ok-up', `${files.length} arquivo(s) confirmado(s)! Material disponível para a comissão.`);
-  setTimeout(() => {
-    files.length = 0;
-    renderFiles();
-    document.getElementById('obs-up').value = '';
-    document.querySelectorAll('#panel-2 .tag').forEach(b => b.classList.remove('sel'));
-  }, 4000);
+  const cats = [...document.querySelectorAll('#panel-2 .tag.sel')].map(b => b.textContent).join(', ');
+  const btn = document.querySelector('#panel-2 .btn');
+  btn.textContent = 'Enviando...'; btn.disabled = true;
+
+  // Envia metadados dos arquivos (Formspree free não aceita binários, mas registra os nomes)
+  const ok = await postToFormspree({
+    tipo: 'ENVIO DE ARQUIVO',
+    nome: document.getElementById('nome-up').value || 'Anônimo',
+    curso: document.getElementById('curso-up').value,
+    tipo_material: cats || 'Não informado',
+    arquivos: files.map(f => `${f.name} (${fmtSize(f.size)})`).join(' | '),
+    observacoes: document.getElementById('obs-up').value
+  });
+  btn.textContent = 'Confirmar envio'; btn.disabled = false;
+  if (ok) {
+    showToast('ok-up', `${files.length} arquivo(s) registrado(s)! Metadados enviados à comissão.`);
+    setTimeout(() => {
+      files.length = 0; renderFiles();
+      document.getElementById('obs-up').value = '';
+      document.querySelectorAll('#panel-2 .tag').forEach(b => b.classList.remove('sel'));
+    }, 4000);
+  } else { alert('Erro ao enviar. Tente novamente.'); }
 }
 </script>
 </body>

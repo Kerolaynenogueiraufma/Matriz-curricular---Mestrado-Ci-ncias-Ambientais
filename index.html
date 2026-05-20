@@ -486,25 +486,34 @@ async function submitUpload() {
   const cats = [...document.querySelectorAll('#panel-2 .tag.sel')].map(b => b.textContent).join(', ');
   const btn = document.querySelector('#panel-2 .btn');
   btn.textContent = 'Enviando...'; btn.disabled = true;
-
-  // Envia metadados dos arquivos (Formspree free não aceita binários, mas registra os nomes)
-  const ok = await postToFormspree({
-    tipo: 'ENVIO DE ARQUIVO',
-    nome: document.getElementById('nome-up').value || 'Anônimo',
-    curso: document.getElementById('curso-up').value,
-    tipo_material: cats || 'Não informado',
-    arquivos: files.map(f => `${f.name} (${fmtSize(f.size)})`).join(' | '),
-    observacoes: document.getElementById('obs-up').value
-  });
-  btn.textContent = 'Confirmar envio'; btn.disabled = false;
-  if (ok) {
-    showToast('ok-up', `${files.length} arquivo(s) registrado(s)! Metadados enviados à comissão.`);
-    setTimeout(() => {
-      files.length = 0; renderFiles();
-      document.getElementById('obs-up').value = '';
-      document.querySelectorAll('#panel-2 .tag').forEach(b => b.classList.remove('sel'));
-    }, 4000);
-  } else { alert('Erro ao enviar. Tente novamente.'); }
+  try {
+    const fd = new FormData();
+    fd.append('tipo', 'ENVIO DE ARQUIVO');
+    fd.append('nome', document.getElementById('nome-up').value || 'Anônimo');
+    fd.append('curso', document.getElementById('curso-up').value);
+    fd.append('tipo_material', cats || 'Não informado');
+    fd.append('observacoes', document.getElementById('obs-up').value);
+    files.forEach(f => fd.append('arquivo', f, f.name));
+    const res = await fetch(FORMSPREE, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: fd
+    });
+    btn.textContent = 'Confirmar envio'; btn.disabled = false;
+    if (res.ok) {
+      showToast('ok-up', `${files.length} arquivo(s) enviado(s) com sucesso!`);
+      setTimeout(() => {
+        files.length = 0; renderFiles();
+        document.getElementById('obs-up').value = '';
+        document.querySelectorAll('#panel-2 .tag').forEach(b => b.classList.remove('sel'));
+      }, 4000);
+    } else {
+      alert('Erro ao enviar. Verifique se o plano Formspree permite anexos e tente novamente.');
+    }
+  } catch(e) {
+    btn.textContent = 'Confirmar envio'; btn.disabled = false;
+    alert('Erro de conexão. Verifique sua internet e tente novamente.');
+  }
 }
 </script>
 </body>

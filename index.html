@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consulta Curricular — Ciências Ambientais</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F2ED;
+  --surface: #FFFFFF;
+  --surface2: #EDE9E2;
+  --border: #D6D0C6;
+  --text: #1A1814;
+  --text2: #5C574F;
+  --text3: #9C9488;
+  --accent: #2D6B4A;
+  --accent-light: #D4EAD8;
+  --accent2: #8B4A1C;
+  --accent2-light: #F5E0CE;
+  --warn: #C17B2A;
+  --warn-light: #FFF0D6;
+  --radius: 10px;
+  --radius-lg: 16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:0}
+.hero{background:var(--accent);padding:3rem 2rem 2rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(255,255,255,.06) 0%,transparent 60%),radial-gradient(ellipse at 70% 20%,rgba(255,255,255,.04) 0%,transparent 50%)}
+.hero-tag{display:inline-block;background:rgba(255,255,255,.15);color:rgba(255,255,255,.9);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:5px 14px;border-radius:20px;margin-bottom:1rem;border:1px solid rgba(255,255,255,.2)}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(1.6rem,4vw,2.4rem);color:#fff;line-height:1.2;margin-bottom:.6rem}
+.hero p{font-size:15px;color:rgba(255,255,255,.75);max-width:480px;margin:0 auto}
+.container{max-width:700px;margin:0 auto;padding:2rem 1.25rem 4rem}
+.tabs{display:flex;gap:6px;margin-bottom:1.75rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:5px}
+.tab{flex:1;padding:9px 6px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border:none;background:none;border-radius:10px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.tab svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.tab.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(45,107,74,.25)}
+.tab:hover:not(.active){background:var(--surface2);color:var(--text)}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1rem}
+.info-banner{background:var(--accent-light);border:1px solid rgba(45,107,74,.2);border-radius:var(--radius);padding:.75rem 1rem;font-size:13px;color:#1D5235;display:flex;gap:10px;align-items:flex-start;margin-bottom:1.5rem;line-height:1.5}
+.info-banner svg{width:16px;height:16px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;margin-top:1px}
+.sect-label{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:.75rem}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
+input[type=text]{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--bg);transition:border-color .15s}
+input[type=text]:focus{outline:none;border-color:var(--accent);background:#fff}
+input[type=text]::placeholder{color:var(--text3)}
+.disc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.5rem}
+@media(max-width:520px){.disc-grid,.grid-2{grid-template-columns:1fr}}
+.disc-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:10px;text-align:left}
+.disc-item:hover{border-color:var(--accent);background:var(--accent-light)}
+.disc-item.selected{border-color:var(--accent);background:var(--accent-light)}
+.disc-item.selected .chkbox{background:var(--accent);border-color:var(--accent)}
+.disc-item.selected .chkbox::after{opacity:1}
+.chkbox{width:18px;height:18px;min-width:18px;border-radius:5px;border:1.5px solid var(--border);background:#fff;position:relative;transition:all .15s;margin-top:1px}
+.chkbox::after{content:'';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath d='M1 5l3.5 3.5L11 1' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;background-size:10px;opacity:0;transition:opacity .15s}
+.disc-num{font-size:10px;font-weight:600;color:var(--text3);min-width:20px;padding-top:2px}
+.disc-label{font-size:13px;color:var(--text);line-height:1.4}
+.counter{font-size:13px;color:var(--text2);margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.counter-pills{display:flex;gap:4px}
+.pill{width:20px;height:6px;border-radius:3px;background:var(--border);transition:background .2s}
+.pill.filled{background:var(--accent)}
+textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--bg);resize:vertical;min-height:110px;transition:border-color .15s;line-height:1.6}
+textarea:focus{outline:none;border-color:var(--accent);background:#fff}
+textarea::placeholder{color:var(--text3)}
+.field-label{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:6px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.25rem}
+.tag{padding:6px 13px;border-radius:20px;border:1px solid var(--border);font-size:12px;font-weight:500;cursor:pointer;background:var(--bg);color:var(--text2);transition:all .15s;font-family:'DM Sans',sans-serif}
+.tag:hover{border-color:var(--accent);color:var(--accent)}
+.tag.sel{background:var(--accent-light);border-color:var(--accent);color:#1D5235}
+.prio-group{display:flex;gap:8px;margin-bottom:1.25rem}
+.prio-btn{flex:1;padding:8px;border-radius:var(--radius);border:1px solid var(--border);font-size:12px;font-weight:500;cursor:pointer;background:var(--bg);color:var(--text2);transition:all .15s;font-family:'DM Sans',sans-serif;text-align:center}
+.prio-btn:hover{border-color:var(--text2)}
+.prio-btn.sel-alta{background:#FDECEA;border-color:#C0392B;color:#7B241C}
+.prio-btn.sel-media{background:var(--warn-light);border-color:var(--warn);color:#7D4F0A}
+.prio-btn.sel-baixa{background:var(--accent-light);border-color:var(--accent);color:#1D5235}
+.drop-zone{border:1.5px dashed var(--border);border-radius:var(--radius-lg);padding:2rem;text-align:center;cursor:pointer;background:var(--bg);transition:all .2s;margin-bottom:1rem}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--accent);background:var(--accent-light)}
+.drop-icon{width:36px;height:36px;stroke:var(--text3);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;margin:0 auto .75rem}
+.drop-zone:hover .drop-icon,.drop-zone.drag .drop-icon{stroke:var(--accent)}
+.drop-title{font-size:14px;font-weight:500;color:var(--text)}
+.drop-sub{font-size:12px;color:var(--text3);margin-top:4px}
+.file-list{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem}
+.file-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;display:flex;align-items:center;gap:10px}
+.file-icon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:.03em;flex-shrink:0}
+.file-icon.pdf{background:#FDECEA;color:#C0392B}
+.file-icon.doc{background:#EBF0FB;color:#2355A5}
+.file-icon.xls{background:var(--accent-light);color:#1D5235}
+.file-icon.img{background:var(--warn-light);color:#7D4F0A}
+.file-icon.other{background:var(--surface2);color:var(--text2)}
+.file-name{flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-size{font-size:11px;color:var(--text3);flex-shrink:0}
+.file-rm{cursor:pointer;color:var(--text3);padding:4px;border-radius:4px;line-height:1;border:none;background:none;font-size:16px;transition:color .15s}
+.file-rm:hover{color:#C0392B}
+.btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer;transition:all .18s;font-family:'DM Sans',sans-serif;letter-spacing:.01em;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:.5rem}
+.btn:hover{background:#235A3C;transform:translateY(-1px);box-shadow:0 4px 16px rgba(45,107,74,.25)}
+.btn:active{transform:translateY(0)}
+.btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.toast{background:#1D5235;color:#fff;border-radius:var(--radius);padding:12px 16px;font-size:13px;display:none;align-items:center;gap:10px;margin-top:1rem;animation:fadeIn .3s}
+.toast svg{width:18px;height:18px;stroke:#7ECC9A;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.divider{height:1px;background:var(--border);margin:1.25rem 0}
+.footer{text-align:center;padding:2rem;font-size:12px;color:var(--text3)}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Ciências Ambientais</div>
+  <h1>Consulta Curricular</h1>
+  <p>Vote nas disciplinas de sua preferência, envie sugestões e materiais de apoio à decisão curricular.</p>
+</div>
+
+<div class="container">
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab(0)">
+      <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Votação
+    </button>
+    <button class="tab" onclick="showTab(1)">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Sugestões
+    </button>
+    <button class="tab" onclick="showTab(2)">
+      <svg viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+      Arquivos
+    </button>
+  </div>
+
+  <!-- VOTAÇÃO -->
+  <div class="panel active" id="panel-0">
+    <div class="info-banner">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Selecione até <strong>&nbsp;5 disciplinas&nbsp;</strong> de sua preferência. As mais votadas orientarão a composição curricular.
+    </div>
+
+    <div class="card">
+      <p class="sect-label">Identificação</p>
+      <div class="grid-2">
+        <div>
+          <p class="field-label">Nome completo</p>
+          <input type="text" id="nome" placeholder="Seu nome">
+        </div>
+        <div>
+          <p class="field-label">Curso / turma</p>
+          <input type="text" id="curso" placeholder="Ex.: Ambiental 2024.1">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="sect-label">Disciplinas disponíveis</p>
+      <div class="counter">
+        <span id="count-txt">0 de 5 selecionadas</span>
+        <div class="counter-pills" id="pills"></div>
+      </div>
+      <div class="disc-grid" id="disc-grid"></div>
+    </div>
+
+    <button class="btn" onclick="submitVote()">
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Enviar votação
+    </button>
+    <div class="toast" id="ok-vote">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      <span id="ok-vote-msg">Votação registrada com sucesso!</span>
+    </div>
+  </div>
+
+  <!-- SUGESTÕES -->
+  <div class="panel" id="panel-1">
+    <div class="info-banner">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Espaço aberto para novas disciplinas, ajustes de ementa, metodologias ou qualquer ideia para o currículo.
+    </div>
+
+    <div class="card">
+      <p class="sect-label">Identificação (opcional)</p>
+      <div class="grid-2">
+        <div>
+          <p class="field-label">Nome</p>
+          <input type="text" id="nome-sug" placeholder="Seu nome">
+        </div>
+        <div>
+          <p class="field-label">Curso / área</p>
+          <input type="text" id="curso-sug" placeholder="Ex.: Ambiental 2024.1">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="sect-label">Categoria</p>
+      <div class="tags">
+        <button class="tag" onclick="toggleTag(this)">Nova disciplina</button>
+        <button class="tag" onclick="toggleTag(this)">Conteúdo programático</button>
+        <button class="tag" onclick="toggleTag(this)">Metodologia de ensino</button>
+        <button class="tag" onclick="toggleTag(this)">Integração com pesquisa</button>
+        <button class="tag" onclick="toggleTag(this)">Atividades práticas/campo</button>
+        <button class="tag" onclick="toggleTag(this)">Outro</button>
+      </div>
+
+      <p class="field-label">Nome da disciplina sugerida</p>
+      <input type="text" id="disc-sug" placeholder="Ex.: Direito Ambiental e Legislação" style="margin-bottom:1.25rem">
+
+      <p class="field-label">Descreva sua sugestão</p>
+      <textarea id="texto-sug" placeholder="Justificativa, ementa básica, referências ou qualquer observação relevante..."></textarea>
+
+      <div class="divider"></div>
+      <p class="field-label">Prioridade percebida</p>
+      <div class="prio-group">
+        <button class="prio-btn" id="prio-alta" onclick="setPrio('alta')">🔴 Alta</button>
+        <button class="prio-btn" id="prio-media" onclick="setPrio('media')">🟡 Média</button>
+        <button class="prio-btn" id="prio-baixa" onclick="setPrio('baixa')">🟢 Baixa</button>
+      </div>
+    </div>
+
+    <button class="btn" onclick="submitSug()">
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Enviar sugestão
+    </button>
+    <div class="toast" id="ok-sug">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      <span>Sugestão enviada! Será analisada pelo colegiado.</span>
+    </div>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="panel" id="panel-2">
+    <div class="info-banner">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Envie ementas, planos de ensino, referências ou materiais de apoio à decisão curricular.
+    </div>
+
+    <div class="card">
+      <p class="sect-label">Identificação (opcional)</p>
+      <div class="grid-2">
+        <div>
+          <p class="field-label">Nome</p>
+          <input type="text" id="nome-up" placeholder="Seu nome">
+        </div>
+        <div>
+          <p class="field-label">Curso / área</p>
+          <input type="text" id="curso-up" placeholder="Ex.: Ambiental 2024.1">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="sect-label">Tipo de material</p>
+      <div class="tags" style="margin-bottom:1.25rem">
+        <button class="tag" onclick="toggleTag(this)">Ementa</button>
+        <button class="tag" onclick="toggleTag(this)">Plano de ensino</button>
+        <button class="tag" onclick="toggleTag(this)">Referências bibliográficas</button>
+        <button class="tag" onclick="toggleTag(this)">Artigo / texto base</button>
+        <button class="tag" onclick="toggleTag(this)">Outro</button>
+      </div>
+
+      <p class="field-label" style="margin-bottom:10px">Arquivo(s)</p>
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="dragOver(event)" ondragleave="dragLeave()" ondrop="dropFile(event)">
+        <svg class="drop-icon" viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+        <p class="drop-title">Clique para selecionar ou arraste aqui</p>
+        <p class="drop-sub">PDF, DOCX, XLSX, JPG, PNG — máx. 10 MB por arquivo</p>
+      </div>
+      <input type="file" id="file-input" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" style="display:none" onchange="addFiles(this.files)">
+      <div class="file-list" id="file-list"></div>
+
+      <p class="field-label">Observações</p>
+      <textarea id="obs-up" placeholder="Referente a qual disciplina? Como este material contribui para a decisão..."></textarea>
+    </div>
+
+    <button class="btn" onclick="submitUpload()">
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Confirmar envio
+    </button>
+    <div class="toast" id="ok-up">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      <span id="ok-up-msg">Arquivos recebidos com sucesso!</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">Formulário de consulta curricular — Ciências Ambientais</div>
+
+<script>
+const discs = [
+  "Biodiversidade, Sociobiodiversidade e Conservação em Territórios Vulneráveis",
+  "Etnobiologia, Sociobiodiversidade e Mudanças Ambientais",
+  "Educação Ambiental, Comunicação de Risco e Participação Social",
+  "Geotecnologias, Indicadores e Modelagem Ambiental",
+  "Segurança Alimentar",
+  "Segurança Alimentar em Contextos Socioambientais",
+  "Biotecnologias Ambientais e Biorremediação",
+  "Tecnologias Sustentáveis para Água, Solo e Resíduos",
+  "Materiais Sustentáveis Aplicados ao Ambiente",
+  "Física Ambiental",
+  "Biomateriais e Nanotecnologias",
+  "Mudanças Climáticas, Riscos e Adaptação Socioambiental",
+  "Ecologia Aplicada, Biomonitoramento e Indicadores de Qualidade Ambiental",
+  "Química Ambiental e Contaminantes Emergentes",
+  "Políticas Públicas, Justiça Ambiental e Desenvolvimento Territorial",
+  "Tópicos Especiais em Ciências Ambientais"
+];
+
+const selected = new Set();
+const files = [];
+
+const grid = document.getElementById('disc-grid');
+const pillsEl = document.getElementById('pills');
+
+for (let i = 0; i < 5; i++) {
+  const p = document.createElement('div');
+  p.className = 'pill';
+  p.id = 'pill-' + i;
+  pillsEl.appendChild(p);
+}
+
+discs.forEach((d, i) => {
+  const el = document.createElement('div');
+  el.className = 'disc-item';
+  el.id = 'disc-' + i;
+  el.innerHTML = `<div class="chkbox" id="chk-${i}"></div><div><span class="disc-num">${String(i+1).padStart(2,'0')}</span> <span class="disc-label">${d}</span></div>`;
+  el.onclick = () => toggle(i);
+  grid.appendChild(el);
+});
+
+function toggle(i) {
+  if (selected.has(i)) {
+    selected.delete(i);
+    document.getElementById('disc-' + i).classList.remove('selected');
+  } else if (selected.size < 5) {
+    selected.add(i);
+    document.getElementById('disc-' + i).classList.add('selected');
+  }
+  updateCounter();
+}
+
+function updateCounter() {
+  const n = selected.size;
+  document.getElementById('count-txt').textContent = n + ' de 5 selecionadas';
+  for (let i = 0; i < 5; i++) {
+    document.getElementById('pill-' + i).classList.toggle('filled', i < n);
+  }
+}
+
+function showTab(n) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
+  document.querySelectorAll('.panel').forEach((p, i) => p.classList.toggle('active', i === n));
+}
+
+function toggleTag(btn) { btn.classList.toggle('sel'); }
+
+let prio = '';
+function setPrio(v) {
+  prio = v;
+  ['alta','media','baixa'].forEach(k => {
+    const btn = document.getElementById('prio-' + k);
+    btn.className = 'prio-btn' + (k === v ? ' sel-' + k : '');
+  });
+}
+
+function showToast(id, msg, duration = 4000) {
+  const el = document.getElementById(id);
+  if (msg) el.querySelector('span').textContent = msg;
+  el.style.display = 'flex';
+  setTimeout(() => { el.style.display = 'none'; }, duration);
+}
+
+function submitVote() {
+  const nome = document.getElementById('nome').value.trim();
+  if (!nome) { alert('Por favor, informe seu nome.'); return; }
+  if (selected.size === 0) { alert('Selecione ao menos uma disciplina.'); return; }
+  const labels = [...selected].map(i => discs[i]);
+  console.log('VOTO', { nome, curso: document.getElementById('curso').value, disciplinas: labels });
+  showToast('ok-vote', `Votação de ${nome} registrada! ${selected.size} disciplina(s) selecionada(s).`);
+  setTimeout(() => {
+    selected.forEach(i => document.getElementById('disc-' + i).classList.remove('selected'));
+    selected.clear();
+    updateCounter();
+    document.getElementById('nome').value = '';
+    document.getElementById('curso').value = '';
+  }, 4000);
+}
+
+function submitSug() {
+  const txt = document.getElementById('texto-sug').value.trim();
+  if (!txt) { alert('Escreva sua sugestão antes de enviar.'); return; }
+  console.log('SUGESTÃO', {
+    nome: document.getElementById('nome-sug').value,
+    disciplina: document.getElementById('disc-sug').value,
+    texto: txt, prioridade: prio
+  });
+  showToast('ok-sug', 'Sugestão enviada! Será analisada pelo colegiado.');
+  setTimeout(() => {
+    document.getElementById('texto-sug').value = '';
+    document.getElementById('disc-sug').value = '';
+    document.querySelectorAll('#panel-1 .tag').forEach(b => b.classList.remove('sel'));
+    prio = '';
+    ['alta','media','baixa'].forEach(k => document.getElementById('prio-'+k).className = 'prio-btn');
+  }, 4000);
+}
+
+function addFiles(fl) {
+  Array.from(fl).forEach(f => {
+    if (f.size > 10 * 1024 * 1024) { alert(`${f.name} excede 10 MB.`); return; }
+    files.push(f);
+  });
+  renderFiles();
+}
+
+function getExt(name) {
+  const e = name.split('.').pop().toLowerCase();
+  if (e === 'pdf') return 'pdf';
+  if (e === 'doc' || e === 'docx') return 'doc';
+  if (e === 'xls' || e === 'xlsx') return 'xls';
+  if (['jpg','jpeg','png','gif'].includes(e)) return 'img';
+  return 'other';
+}
+
+function fmtSize(n) {
+  return n > 1024*1024 ? (n/1024/1024).toFixed(1)+' MB' : Math.round(n/1024)+' KB';
+}
+
+function renderFiles() {
+  const list = document.getElementById('file-list');
+  list.innerHTML = '';
+  files.forEach((f, i) => {
+    const ext = getExt(f.name);
+    const labels = {pdf:'PDF',doc:'DOC',xls:'XLS',img:'IMG',other:'ARQ'};
+    const div = document.createElement('div');
+    div.className = 'file-item';
+    div.innerHTML = `<div class="file-icon ${ext}">${labels[ext]}</div><span class="file-name">${f.name}</span><span class="file-size">${fmtSize(f.size)}</span><button class="file-rm" onclick="removeFile(${i})" title="Remover">×</button>`;
+    list.appendChild(div);
+  });
+}
+
+function removeFile(i) { files.splice(i, 1); renderFiles(); }
+
+function dragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag'); }
+function dragLeave() { document.getElementById('drop-zone').classList.remove('drag'); }
+function dropFile(e) { e.preventDefault(); dragLeave(); addFiles(e.dataTransfer.files); }
+
+function submitUpload() {
+  if (files.length === 0) { alert('Adicione ao menos um arquivo.'); return; }
+  console.log('UPLOAD', { arquivos: files.map(f => f.name), obs: document.getElementById('obs-up').value });
+  showToast('ok-up', `${files.length} arquivo(s) confirmado(s)! Material disponível para a comissão.`);
+  setTimeout(() => {
+    files.length = 0;
+    renderFiles();
+    document.getElementById('obs-up').value = '';
+    document.querySelectorAll('#panel-2 .tag').forEach(b => b.classList.remove('sel'));
+  }, 4000);
+}
+</script>
+</body>
+</html>
